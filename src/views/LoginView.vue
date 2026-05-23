@@ -43,11 +43,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
+const router = useRouter()
 const loading = ref(false)
+
+// Redirect as soon as a valid authenticated user is detected
+watch(
+  () => authStore.user,
+  (user) => {
+    if (user && authStore.isAllowed) {
+      router.push({ name: 'home' })
+    }
+  },
+)
 
 async function signIn() {
   loading.value = true
