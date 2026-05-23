@@ -25,7 +25,6 @@
               size="large"
               block
               rounded="lg"
-              :loading="loading"
               @click="signIn"
             >
               <template #prepend>
@@ -43,15 +42,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()
-const loading = ref(false)
 
-// Redirect as soon as a valid authenticated user is detected
+// Redirect as soon as a valid authenticated user is detected (after redirect back)
 watch(
   () => authStore.user,
   (user) => {
@@ -61,9 +59,7 @@ watch(
   },
 )
 
-async function signIn() {
-  loading.value = true
-  await authStore.signInWithGoogle()
-  loading.value = false
+function signIn() {
+  authStore.signInWithGoogle()
 }
 </script>
