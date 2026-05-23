@@ -27,6 +27,12 @@ jobs:
 
       - run: npm ci
 
+      - name: Check secrets
+        run: |
+          echo "VITE_FIREBASE_API_KEY set: ${{ secrets.VITE_FIREBASE_API_KEY != '' }}"
+          echo "VITE_FIREBASE_PROJECT_ID set: ${{ secrets.VITE_FIREBASE_PROJECT_ID != '' }}"
+          echo "VITE_ALLOWED_EMAILS set: ${{ secrets.VITE_ALLOWED_EMAILS != '' }}"
+
       - name: Build
         run: npm run build
         env:
