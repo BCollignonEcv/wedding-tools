@@ -78,11 +78,13 @@ const copied = ref(false)
 
 function detectWebView(): boolean {
   const ua = navigator.userAgent
-  return (
-    /FBAN|FBAV|Instagram|Line|MicroMessenger/.test(ua) ||
-    (ua.includes('iPhone') && !ua.includes('Safari')) ||
-    (ua.includes('Android') && /wv|Version\/\d+\.\d+ Chrome/.test(ua))
-  )
+  // Known in-app browser identifiers
+  if (/FBAN|FBAV|Instagram|Line|MicroMessenger|Twitter|LinkedInApp/.test(ua)) return true
+  // Android WebView has explicit 'wv' token
+  if (/Android/.test(ua) && /\bwv\b/.test(ua)) return true
+  // iOS in-app browser: has iPhone/iPad but no Safari token
+  if (/(iPhone|iPad)/.test(ua) && !/Safari/.test(ua)) return true
+  return false
 }
 
 const isWebView = detectWebView()
