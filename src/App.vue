@@ -2,7 +2,6 @@
   <v-app>
     <v-app-bar color="primary" elevation="2">
       <v-app-bar-nav-icon @click="drawer = !drawer" />
-      <v-icon icon="mdi-heart" class="ml-1 mr-2" />
       <v-toolbar-title>Wedding Tools</v-toolbar-title>
     </v-app-bar>
 

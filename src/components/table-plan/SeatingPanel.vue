@@ -5,8 +5,8 @@
       <v-col cols="6" sm="3">
         <v-card rounded="lg" variant="tonal" color="primary">
           <v-card-text class="text-center pa-4">
-            <div class="text-h5 font-weight-bold">{{ store.guests.length }}</div>
-            <div class="text-caption">Convives</div>
+            <div class="text-h5 font-weight-bold">{{ store.activeGuests.length }}</div>
+            <div class="text-caption">Présents</div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -27,10 +27,10 @@
         </v-card>
       </v-col>
       <v-col cols="6" sm="3">
-        <v-card rounded="lg" variant="tonal" color="secondary">
+        <v-card rounded="lg" variant="tonal" :color="store.disabledGuests.length > 0 ? 'error' : 'grey'">
           <v-card-text class="text-center pa-4">
-            <div class="text-h5 font-weight-bold">{{ totalSeats }}</div>
-            <div class="text-caption">Places totales</div>
+            <div class="text-h5 font-weight-bold">{{ store.disabledGuests.length }}</div>
+            <div class="text-caption">Absents</div>
           </v-card-text>
         </v-card>
       </v-col>
@@ -65,7 +65,7 @@
       >
         <v-card rounded="lg" elevation="2" border>
           <v-card-title class="d-flex align-center justify-space-between pa-4 pb-2">
-            <div class="d-flex align-center gap-2">
+            <div class="d-flex align-center ga-2">
               <v-icon icon="mdi-table-chair" color="primary" size="20" />
               <span>{{ table.name }}</span>
             </div>
@@ -74,13 +74,28 @@
               size="small"
               variant="tonal"
             >
-              {{ store.guestsAtTable(table.id).length }}/{{ table.seats }}
+              {{ store.activeGuestsAtTable(table.id).length }}/{{ table.seats }}
             </v-chip>
           </v-card-title>
 
+          <!-- Warning: disabled guests assigned to this table -->
+          <div v-if="store.disabledGuestsAtTable(table.id).length > 0" class="px-4 pb-2">
+            <v-alert
+              type="warning"
+              variant="tonal"
+              density="compact"
+              rounded="lg"
+              :icon="false"
+            >
+              <v-icon icon="mdi-account-off" size="15" class="mr-1" />
+              {{ store.disabledGuestsAtTable(table.id).length }} convive(s) absent(s) assigné(s) à cette table
+            </v-alert>
+          </div>
+
           <v-card-text class="pa-4 pt-2">
+            <!-- Active guests -->
             <v-chip
-              v-for="guest in store.guestsAtTable(table.id)"
+              v-for="guest in store.activeGuestsAtTable(table.id)"
               :key="guest.id"
               class="ma-1"
               closable
@@ -92,9 +107,24 @@
               {{ guest.firstName }} {{ guest.lastName }}
             </v-chip>
 
+            <!-- Disabled guests (shown separately, with strikethrough) -->
+            <v-chip
+              v-for="guest in store.disabledGuestsAtTable(table.id)"
+              :key="guest.id"
+              class="ma-1 text-decoration-line-through opacity-60"
+              closable
+              size="small"
+              color="error"
+              variant="tonal"
+              @click:close="store.unassignGuest(guest.id)"
+            >
+              <v-icon start icon="mdi-account-off" size="12" />
+              {{ guest.firstName }} {{ guest.lastName }}
+            </v-chip>
+
             <v-btn
               v-if="!isTableFull(table.id, table.seats) && store.unassignedGuests.length > 0"
-              variant="dashed"
+              variant="outlined"
               color="primary"
               size="small"
               prepend-icon="mdi-plus"
@@ -116,7 +146,7 @@
       </v-col>
     </v-row>
 
-    <!-- Unassigned guests -->
+    <!-- Unassigned active guests -->
     <v-card
       v-if="store.unassignedGuests.length > 0"
       rounded="lg"
@@ -182,7 +212,7 @@
               v-for="table in availableTables"
               :key="table.id"
               :title="table.name"
-              :subtitle="`${store.guestsAtTable(table.id).length}/${table.seats} places`"
+              :subtitle="`${store.activeGuestsAtTable(table.id).length}/${table.seats} places`"
               rounded="lg"
               @click="assignGuestToTable(table.id)"
             >
@@ -213,18 +243,14 @@ const targetTableId = ref<string | null>(null)
 const assignGuestDialog = ref(false)
 const targetGuestId = ref<string | null>(null)
 
-const totalSeats = computed(() =>
-  store.tables.reduce((sum, t) => sum + t.seats, 0),
-)
-
 const availableTables = computed(() =>
   store.tables.filter(
-    (t) => store.guestsAtTable(t.id).length < t.seats,
+    (t) => store.activeGuestsAtTable(t.id).length < t.seats,
   ),
 )
 
 function isTableFull(tableId: string, seats: number): boolean {
-  return store.guestsAtTable(tableId).length >= seats
+  return store.activeGuestsAtTable(tableId).length >= seats
 }
 
 function openAssignDialog(tableId: string) {

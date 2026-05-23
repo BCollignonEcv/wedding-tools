@@ -2,7 +2,6 @@
   <v-container class="py-10">
     <v-row justify="center">
       <v-col cols="12" class="text-center mb-8">
-        <v-icon icon="mdi-heart" color="primary" size="64" />
         <h1 class="text-h3 font-weight-bold mt-4">Wedding Tools</h1>
         <p class="text-subtitle-1 text-medium-emphasis mt-2">
           Tous les outils pour organiser votre jour parfait
